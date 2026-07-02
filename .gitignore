@@ -6,6 +6,9 @@ dist/
 build/
 coverage/
 
+# Cache
+__pycache__
+
 # TypeScript
 *.tsbuildinfo
 

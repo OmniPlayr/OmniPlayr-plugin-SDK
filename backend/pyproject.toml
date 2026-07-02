@@ -1,0 +1,43 @@
+[build-system]
+requires = ["hatchling>=1.26"]
+build-backend = "hatchling.build"
+
+[project]
+name = "omniplayr-plugins"
+version = "2026.7.2"
+description = "Backend development SDK for OmniPlayr plugins."
+readme = "README.md"
+requires-python = ">=3.10"
+license = "MIT"
+authors = [
+  { name = "OmniPlayr" }
+]
+keywords = ["omniplayr", "plugins", "sdk", "typing"]
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Intended Audience :: Developers",
+  "License :: OSI Approved :: MIT License",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Typing :: Typed",
+]
+dependencies = []
+
+[project.urls]
+Homepage = "https://omniplayr.wokki20.nl/"
+Documentation = "https://omniplayr.wokki20.nl/docs/plugins/building/backend/"
+Repository = "https://github.com/OmniPlayr/OmniPlayr-plugin-SDK"
+Issues = "https://github.com/OmniPlayr/OmniPlayr-plugin-SDK/issues"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/omniplayr"]
+
+[tool.hatch.build.targets.sdist]
+include = [
+  "README.md",
+  "pyproject.toml",
+  "src/omniplayr",
+]
