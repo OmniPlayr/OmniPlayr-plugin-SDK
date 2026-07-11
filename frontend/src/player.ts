@@ -51,6 +51,92 @@ export interface SourcePlugin {
   activate?(): void;
   /** Optional volume sync hook. Value is a 0-1 fraction. */
   setVolume?(fraction: number): void;
+  /** Optional transient volume hook for fades. Value is a 0-1 fraction and should not be persisted. */
+  setTransientVolume?(fraction: number): void;
+}
+
+/** Device descriptor exposed by an audio output plugin.
+ *
+ * `device_identifier` and `device_type` are required so OmniPlayr can persist and target the device.
+ * `device_ip` is optional for output types that need or discover an address.
+ *
+ * [Read documentation](https://omniplayr.wokki20.nl/docs/plugins/building/frontend/ui.html#audio-output-devices)
+ */
+export interface AudioOutputDevice {
+  /** Stable id for this device within your plugin, such as a Cast receiver id or user-defined target id. */
+  device_identifier: string;
+  /** Output family/type, such as `google-cast`, `airplay`, `dlna`, or your plugin's own type. */
+  device_type: string;
+  /** Optional IP address or host for the target device. */
+  device_ip?: string | null;
+  /** Optional human-readable label shown in the player output picker. */
+  label?: string;
+}
+
+/** Playback request sent to an audio output plugin.
+ *
+ * [Read documentation](https://omniplayr.wokki20.nl/docs/plugins/building/frontend/ui.html#audio-output-devices)
+ */
+export interface AudioOutputPlaybackRequest {
+  /** Current track id/path understood by the source type. */
+  songId: string;
+  /** Source type for the current track. */
+  sourceType: string;
+  /** Authenticated URL that streams the current track from OmniPlayr. */
+  streamUrl: string;
+  /** MIME type returned by the backend plugin, if known. */
+  contentType?: string | null;
+  /** Current track metadata, if known. */
+  metadata: TrackMetadata | null;
+  /** Optional queue item extra data. */
+  extra?: Record<string, unknown>;
+  /** Selected output device. */
+  device: AudioOutputDevice;
+}
+
+/** Callbacks an audio output plugin uses to report remote playback state back to OmniPlayr. */
+export interface AudioOutputPluginCallbacks {
+  /** Tell OmniPlayr the target is ready and loading can end. */
+  onReady: () => void;
+  /** Tell OmniPlayr remote playback ended so it can move to the next queued item. */
+  onEnded: () => void;
+  /** Tell OmniPlayr play/pause/time state changed and UI should refresh. */
+  onStateChange: () => void;
+  /** Report a remote playback failure. */
+  onError: (error: unknown) => void;
+}
+
+/** Implement this when a frontend plugin can send OmniPlayr's stream URL to another audio output.
+ *
+ * [Read documentation](https://omniplayr.wokki20.nl/docs/plugins/building/frontend/ui.html#audio-output-devices)
+ */
+export interface AudioOutputPlugin {
+  /** Return currently available output devices. Each device must include `device_identifier` and `device_type`. */
+  listDevices(): AudioOutputDevice[];
+  /** Start playback on the selected output device using the provided authenticated stream URL. */
+  play(request: AudioOutputPlaybackRequest, callbacks: AudioOutputPluginCallbacks): Promise<void>;
+  /** Optional remote pause hook. */
+  pause?(): void;
+  /** Optional remote resume hook. */
+  resume?(): void;
+  /** Optional remote seek hook, in absolute seconds. */
+  seek?(seconds: number): void;
+  /** Optional hook to stop remote playback when switching away. */
+  stop?(): void;
+  /** Optional volume sync hook. Value is a 0-1 fraction. */
+  setVolume?(fraction: number): void;
+  /** Optional remote position getter, in seconds. */
+  getCurrentTime?(): number;
+  /** Optional remote duration getter, in seconds. */
+  getDuration?(): number;
+  /** Optional remote playing-state getter. */
+  isPlaying?(): boolean;
+}
+
+/** Output device plus the plugin that provided it. */
+export interface RegisteredAudioOutputDevice {
+  pluginId: string;
+  device: AudioOutputDevice;
 }
 
 /** Metadata shown in the OmniPlayr player UI and media session.
@@ -141,6 +227,10 @@ export interface Player {
   readonly volume: number;
   /** Current volume as a 0-1 fraction. */
   readonly volumeFraction: number;
+  /** Currently selected audio output plugin/device pair. */
+  readonly selectedOutputDevice: RegisteredAudioOutputDevice;
+  /** Stable key for the currently selected audio output device. */
+  readonly selectedOutputDeviceKey: string;
   /** Name of the active next queue, if any. */
   readonly queueName: string | null;
   /** Snapshot of the priority queue. */
@@ -187,6 +277,12 @@ export interface Player {
   setVolume(fraction: number): void;
   /** Register or unregister a custom frontend source plugin. Pass null to unregister. */
   registerPlugin(sourceType: string, plugin: SourcePlugin | null): void;
+  /** Register or unregister an audio output plugin. Pass null to unregister. */
+  registerOutputPlugin(pluginId: string, plugin: AudioOutputPlugin | null): void;
+  /** List the local output and all devices currently returned by registered output plugins. */
+  getOutputDevices(): RegisteredAudioOutputDevice[];
+  /** Select the device OmniPlayr should send backend-streamed audio to. */
+  selectOutputDevice(pluginId: string, device: AudioOutputDevice): void;
 }
 
 /** Shared OmniPlayr player instance. This is provided by the host app at runtime.

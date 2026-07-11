@@ -37,7 +37,7 @@ https://omniplayr.wokki20.nl/docs/plugins/building/frontend/#frontend-plugin-ove
 - `api`, `ApiClient`, `ApiParams`, `ApiError`  
   Docs: https://omniplayr.wokki20.nl/docs/plugins/building/frontend/api.html#api-requests
 
-- `emit`, `on`, `player`, `playSong`, `SourcePlugin`, `TrackMetadata`, `QueueItem`, `HistoryItem`  
+- `emit`, `on`, `player`, `playSong`, `SourcePlugin`, `AudioOutputPlugin`, `AudioOutputDevice`, `TrackMetadata`, `QueueItem`, `HistoryItem`  
   Docs: https://omniplayr.wokki20.nl/docs/plugins/building/frontend/events.html#event-bus-player
 
 - `modify`, `DOMHook`  
